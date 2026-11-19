@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dicelma & Núrio — Experiência Cinematográfica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0E0D0C;
+      --bg-light: #F7F4EF;
+      --gold: #D4AF37;
+      --gold-soft: #B59A6D;
+      --text-light: #F7F4EF;
+      --text-dark: #1A1817;
+      --muted-light: rgba(247, 244, 239, 0.65);
+      --muted-dark: rgba(26, 24, 23, 0.6);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      transition: background-color 0.8s ease, color 0.8s ease;
+    }
+
+    body.light-theme {
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    h1, h2, .cinzel { font-family: 'Cinzel', serif; font-weight: 400; }
+    .serif { font-family: 'Cormorant Garamond', serif; }
+
+    /* Custom Cursor Glow */
+    .cursor-glow {
+      position: fixed;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.11) 0%, transparent 70%);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      transition: opacity 0.3s;
+    }
+
+    /* Progress Bar */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+      z-index: 1200;
+    }
+
+    /* Cinema Entrance Curtain */
+    .curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: #0A0908;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      transition: opacity 1.1s cubic-bezier(0.77, 0, 0.175, 1), visibility 1.1s;
+    }
+
+    .curtain.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .curtain-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-bottom: 1.5rem;
+    }
+
+    .curtain-names {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    .curtain-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.35rem;
+      color: var(--muted-light);
+      max-width: 480px;
+      margin-bottom: 2.8rem;
+    }
+
+    .enter-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .btn-primary-gold {
+      background: var(--gold);
+      color: #0E0D0C;
+      border: none;
+      padding: 1rem 2.2rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-primary-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-light);
+      border: 1px solid rgba(247, 244, 239, 0.3);
+      padding: 1rem 1.8rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .btn-ghost:hover { border-color: var(--gold); }
+
+    /* Floating Glass HUD */
+    .hud-nav {
+      position: fixed;
+      top: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 999px;
+      background: rgba(18, 17, 16, 0.72);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-light);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      max-width: 94vw;
+    }
+
+    .hud-brand {
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
+      color: var(--gold);
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #fff;
+      padding: 0.42rem 0.95rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      white-space: nowrap;
+      transition: all 0.25s;
+    }
+
+    .hud-btn:hover, .hud-btn.active {
+      background: var(--gold);
+      color: #0E0D0C;
+      border-color: var(--gold);
+    }
+
+    /* Hero Parallax Showcase */
+    .hero-cinema {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 6vw;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.06);
+      animation: slowZoom 22s infinite alternate ease-in-out;
+      filter: brightness(0.72);
+    }
+
+    @keyframes slowZoom {
+      from { transform: scale(1.02); }
+      to { transform: scale(1.12); }
+    }
+
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(14,13,12,0.95) 8%, rgba(14,13,12,0.2) 55%, rgba(14,13,12,0.5) 100%);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 780px;
+    }
+
+    .hero-kicker {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-headline {
+      font-size: clamp(2.8rem, 6.5vw, 5.6rem);
+      line-height: 1.04;
+      color: #F7F4EF;
+      margin-bottom: 1rem;
+    }
+
+    .hero-lead {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.4rem;
+      color: rgba(247,244,239,0.85);
+    }
+
+    /* Interactive Filter Bar */
+    .filter-strip {
+      position: sticky;
+      top: 4.8rem;
+      z-index: 800;
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      padding: 1.2rem 4vw;
+      pointer-events: none;
+    }
+
+    .filter-pill {
+      pointer-events: auto;
+      background: rgba(25, 23, 21, 0.82);
+      backdrop-filter: blur(10px);
+      color: #F7F4EF;
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      padding: 0.45rem 1.05rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .filter-pill.active, .filter-pill:hover {
+      background: var(--gold);
+      color: #0E0D0C;
+      border-color: var(--gold);
+    }
+
+    /* Interactive Gallery Stage */
+    .stage {
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 3rem 5vw 6rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .chapter-banner {
+      margin: 5rem 0 2.8rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      padding-bottom: 1.2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .chapter-banner h2 {
+      font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+    }
+
+    .chapter-banner span {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.2rem;
+      color: var(--gold-soft);
+    }
+
+    /* Magazine / Bento Dynamic Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.8rem;
+    }
+
+    .tile {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #1C1A18;
+      transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+    }
+
+    .tile:hover {
+      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.45);
+      z-index: 4;
+    }
+
+    .tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tile:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Span variations for editorial rhythm */
+    .span-12 { grid-column: span 12; aspect-ratio: 21 / 9; }
+    .span-8  { grid-column: span 8;  aspect-ratio: 16 / 10; }
+    .span-7  { grid-column: span 7;  aspect-ratio: 4 / 3; }
+    .span-6  { grid-column: span 6;  aspect-ratio: 4 / 3; }
+    .span-5  { grid-column: span 5;  aspect-ratio: 4 / 5; }
+    .span-4  { grid-column: span 4;  aspect-ratio: 4 / 5; }
+
+    .tile-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,9,8,0.85) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.4rem;
+      color: #F7F4EF;
+    }
+
+    .tile:hover .tile-overlay {
+      opacity: 1;
+    }
+
+    .tile-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tile-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+    }
+
+    .fav-btn {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .fav-btn.loved {
+      background: var(--gold);
+      color: #0E0D0C;
+      transform: scale(1.1);
+    }
+
+    /* Cinema Slideshow Mode */
+    .cinema-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      background: #070606;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cinema-modal.open { display: flex; }
+
+    .cinema-frame {
+      position: relative;
+      width: 92vw;
+      height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cinema-frame img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      animation: kenBurns 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes kenBurns {
+      from { transform: scale(1); }
+      to { transform: scale(1.045); }
+    }
+
+    .cinema-caption-bar {
+      margin-top: 1.2rem;
+      text-align: center;
+      color: #F7F4EF;
+    }
+
+    .cinema-caption-bar p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.45rem;
+      color: var(--gold);
+    }
+
+    .cinema-controls {
+      position: fixed;
+      top: 1.4rem;
+      right: 1.8rem;
+      display: flex;
+      gap: 0.8rem;
+      z-index: 1600;
+    }
+
+    .cinema-arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .cinema-prev { left: 1.5rem; }
+    .cinema-next { right: 1.5rem; }
+
+    /* Interactive Love Guestbook / Wishes */
+    .wishes-box {
+      max-width: 760px;
+      margin: 5rem auto 2rem;
+      padding: 3rem;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 10px;
+      text-align: center;
+      background: rgba(212, 175, 55, 0.04);
+    }
+
+    .wishes-box h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.7rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .wish-form {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .wish-form input {
+      padding: 0.8rem 1.1rem;
+      border-radius: 4px;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      font-family: inherit;
+      min-width: 220px;
+    }
+
+    .wish-list {
+      margin-top: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      text-align: left;
+    }
+
+    .wish-item {
+      padding: 0.9rem 1.2rem;
+      border-left: 2px solid var(--gold);
+      background: rgba(255,255,255,0.04);
+      font-size: 0.9rem;
+    }
+
+    #yt-hidden {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0.01;
+      pointer-events: none;
+    }
+
+    @media (max-width: 860px) {
+      .span-12, .span-8, .span-7, .span-6, .span-5, .span-4 {
+        grid-column: span 12;
+        aspect-ratio: 4 / 3;
+      }
+      .hud-brand { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <!-- Cinema Entrance Curtain (Unlocks Audio + Sets Mood) -->
+  <div class="curtain" id="curtain">
+    <p class="curtain-tag">Filme &amp; Galeria Interativa &bull; 50 Memórias</p>
+    <h1 class="curtain-names">Dicelma &amp; Núrio</h1>
+    <p class="curtain-sub">Aumente o som e entre na nossa história. Uma experiência visual criada para sentir cada instante novamente.</p>
+    <div class="enter-actions">
+      <button class="btn-primary-gold" id="enterWithMusic">&#9654; Entrar com Música</button>
+      <button class="btn-ghost" id="enterSilent">Entrar em Silêncio</button>
+    </div>
+  </div>
+
+  <!-- Floating HUD -->
+  <nav class="hud-nav">
+    <span class="hud-brand">D &amp; N</span>
+    <button class="hud-btn" id="hudMusicBtn">&#9835; <span id="hudMusicText">Tocar Música</span></button>
+    <button class="hud-btn" id="cinemaModeBtn">&#9658; Modo Cinema</button>
+    <button class="hud-btn" id="themeToggleBtn">&#9788; Luz / Noite</button>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-cinema">
+    <div class="hero-bg">
+      <img src="fotos/01.jpg" alt="Dicelma & Núrio" onerror="this.src='https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=85'">
+    </div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <p class="hero-kicker">Edição Cinematográfica &bull; Casamento</p>
+      <h1 class="hero-headline">Dicelma &amp; Núrio</h1>
+      <p class="hero-lead">“Cinquenta fotografias, uma canção e o começo de toda uma vida juntos.”</p>
+    </div>
+  </header>
+
+  <!-- Interactive Chapter & Favorites Filter -->
+  <div class="filter-strip" id="filterStrip">
+    <button class="filter-pill active" data-filter="all">Todas (50)</button>
+    <button class="filter-pill" data-filter="cap1">I. Preparação</button>
+    <button class="filter-pill" data-filter="cap2">II. O Altar</button>
+    <button class="filter-pill" data-filter="cap3">III. O Sim</button>
+    <button class="filter-pill" data-filter="cap4">IV. Retratos</button>
+    <button class="filter-pill" data-filter="cap5">V. Celebração</button>
+    <button class="filter-pill" data-filter="favs">&#9829; Favoritas (<span id="favCount">0</span>)</button>
+  </div>
+
+  <!-- Interactive Bento Gallery -->
+  <main class="stage" id="galleryStage"></main>
+
+  <!-- Interactive Guestbook / Mensagem ao Casal -->
+  <section class="stage">
+    <div class="wishes-box">
+      <h3>Deixe uma Mensagem para Dicelma &amp; Núrio</h3>
+      <p style="font-size: 0.88rem; opacity: 0.75;">Escreva uma dedicatória ou memória especial sobre este dia.</p>
+      <form class="wish-form" id="wishForm">
+        <input type="text" id="wishName" placeholder="O seu nome" required />
+        <input type="text" id="wishMsg" placeholder="A sua mensagem de carinho..." required />
+        <button type="submit" class="btn-primary-gold" style="padding: 0.8rem 1.5rem;">Enviar</button>
+      </form>
+      <div class="wish-list" id="wishList"></div>
+    </div>
+  </section>
+
+  <!-- Auto-Playing Cinema Slideshow Modal -->
+  <div class="cinema-modal" id="cinemaModal">
+    <div class="cinema-controls">
+      <button class="hud-btn active" id="autoPlayToggle">&#9208; Auto-Play Ativo</button>
+      <button class="hud-btn" id="closeCinema">&times; Fechar</button>
+    </div>
+    <button class="cinema-arrow cinema-prev" id="cinPrev">&#10094;</button>
+    <div class="cinema-frame">
+      <img id="cinImg" src="" alt="Modo Cinema" />
+    </div>
+    <button class="cinema-arrow cinema-next" id="cinNext">&#10095;</button>
+    <div class="cinema-caption-bar">
+      <p id="cinCaption">Dicelma &amp; Núrio</p>
+      <small id="cinCounter" style="letter-spacing: 0.2em; opacity: 0.7;">01 / 50</small>
+    </div>
+  </div>
+
+  <!-- YouTube Player (NZGHXy1IAHM) -->
+  <div id="yt-hidden"><div id="yt-player"></div></div>
+
+  <script>
+    const pad = (n) => String(n).padStart(2, "0");
+    const fallbackImg = "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1400&q=85";
+
+    const chaptersData = [
+      { id: "cap1", title: "I. Os Primeiros Instantes", sub: "A expectativa antes do grande encontro", start: 1, end: 8 },
+      { id: "cap2", title: "II. A Chegada & O Altar", sub: "Quando dois caminhos se tornam um só", start: 9, end: 17 },
+      { id: "cap3", title: "III. O Sim & A Promessa", sub: "As alianças, a emoção e os abraços", start: 18, end: 27 },
+      { id: "cap4", title: "IV. Retratos do Casal", sub: "Luz dourada, cumplicidade e eternidade", start: 28, end: 39 },
+      { id: "cap5", title: "V. A Festa & O Epílogo", sub: "O brinde, a dança e a celebração do amor", start: 40, end: 50 }
+    ];
+
+    const spanPattern = ["span-8", "span-4", "span-5", "span-7", "span-12", "span-6", "span-6", "span-4", "span-4", "span-4"];
+    const captions = [
+      "O início de para sempre", "Detalhes escolhidos com amor", "A preparação silenciosa", "Luz suave da manhã",
+      "Últimos ajustes", "Serenidade no olhar", "Cumplicidade", "A caminho do altar",
+      "A entrada emocionante", "O primeiro olhar", "Emoção à flor da pele", "De mãos dadas",
+      "Palavras que ficam", "Testemunhas do amor", "Sorriso compartilhado", "Bênçãos",
+      "Unidos diante de todos", "A troca das alianças", "Promessa eterna", "O beijo",
+      "A saída triunfal", "Chuva de alegria", "Abraços sinceros", "Família reunida",
+      "Felicidade plena", "Entre amigos", "Sorrisos espontâneos", "Dicelma & Núrio",
+      "Elegância natural", "Lado a lado", "Sintonia perfeita", "O toque",
+      "Luz dourada", "Olhar sereno", "Pausa para respirar", "Horizonte partilhado",
+      "Cada detalhe", "Leveza", "Eternidade num segundo", "A entrada na festa",
+      "O brinde aos noivos", "O corte do bolo", "A primeira dança", "No ritmo da canção",
+      "Alegria na pista", "Celebrando a vida", "Noite inesquecível", "Energia contagiante",
+      "Sorrisos até ao fim", "O começo de todos os nossos dias"
+    ];
+
+    let favorites = JSON.parse(localStorage.getItem("dn_favs") || "[]");
+    const stage = document.getElementById("galleryStage");
+
+    function renderGallery(filter = "all") {
+      stage.innerHTML = "";
+      chaptersData.forEach(chap => {
+        if (filter !== "all" && filter !== "favs" && filter !== chap.id) return;
+
+        const items = [];
+        for (let i = chap.start; i <= chap.end; i++) {
+          if (filter === "favs" && !favorites.includes(i)) continue;
+          items.push(i);
+        }
+        if (items.length === 0) return;
+
+        const section = document.createElement("section");
+        section.innerHTML = `
+          <div class="chapter-banner">
+            <h2>${chap.title}</h2>
+            <span>${chap.sub}</span>
+          </div>
+          <div class="bento-grid"></div>
+        `;
+        const grid = section.querySelector(".bento-grid");
+
+        items.forEach((num, idx) => {
+          const spanClass = filter === "favs" ? "span-6" : spanPattern[(num - 1) % spanPattern.length];
+          const isLoved = favorites.includes(num);
+          const tile = document.createElement("div");
+          tile.className = `tile ${spanClass}`;
+          tile.innerHTML = `
+            <img src="fotos/${pad(num)}.jpg" loading="lazy" alt="${captions[num - 1]}" onerror="this.src='${fallbackImg}'">
+            <div class="tile-overlay">
+              <div class="tile-meta">
+                <div>
+                  <small style="letter-spacing:0.18em; color:#D4AF37;">N.º ${pad(num)}</small>
+                  <div class="tile-title">${captions[num - 1]}</div>
+                </div>
+                <button class="fav-btn ${isLoved ? 'loved' : ''}" data-fav="${num}" title="Favoritar foto">&#9829;</button>
+              </div>
+            </div>
+          `;
+
+          // 3D Tilt effect on mouse move
+          tile.addEventListener("mousemove", (e) => {
+            const rect = tile.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            tile.style.transform = `perspective(900px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg)`;
+          });
+          tile.addEventListener("mouseleave", () => {
+            tile.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg)";
+          });
+
+          tile.addEventListener("click", (e) => {
+            if (e.target.closest(".fav-btn")) return;
+            openCinema(num, false);
+          });
+
+          tile.querySelector(".fav-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleFavorite(num);
+          });
+
+          grid.appendChild(tile);
+        });
+
+        stage.appendChild(section);
+      });
+      document.getElementById("favCount").textContent = favorites.length;
+    }
+
+    function toggleFavorite(num) {
+      if (favorites.includes(num)) {
+        favorites = favorites.filter(n => n !== num);
+      } else {
+        favorites.push(num);
+      }
+      localStorage.setItem("dn_favs", JSON.stringify(favorites));
+      const activeFilter = document.querySelector(".filter-pill.active").dataset.filter;
+      renderGallery(activeFilter);
+    }
+
+    renderGallery();
+
+    // Filter pills
+    document.querySelectorAll(".filter-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        renderGallery(pill.dataset.filter);
+      });
+    });
+
+    // Cinema Slideshow Mode
+    const cinemaModal = document.getElementById("cinemaModal");
+    const cinImg = document.getElementById("cinImg");
+    const cinCaption = document.getElementById("cinCaption");
+    const cinCounter = document.getElementById("cinCounter");
+    const autoPlayToggle = document.getElementById("autoPlayToggle");
+    let cinIndex = 1;
+    let slideTimer = null;
+    let autoSlide = true;
+
+    function updateCinemaSlide(num) {
+      cinIndex = num;
+      cinImg.src = `fotos/${pad(cinIndex)}.jpg`;
+      cinImg.onerror = () => { cinImg.src = fallbackImg; };
+      cinCaption.textContent = captions[cinIndex - 1];
+      cinCounter.textContent = `${pad(cinIndex)} / 50`;
+    }
+
+    function startAutoSlide() {
+      stopAutoSlide();
+      autoSlide = true;
+      autoPlayToggle.classList.add("active");
+      autoPlayToggle.innerHTML = "&#9208; Auto-Play Ativo";
+      slideTimer = setInterval(() => {
+        updateCinemaSlide(cinIndex < 50 ? cinIndex + 1 : 1);
+      }, 4500);
+    }
+
+    function stopAutoSlide() {
+      autoSlide = false;
+      autoPlayToggle.classList.remove("active");
+      autoPlayToggle.innerHTML = "&#9654; Auto-Play Pausado";
+      if (slideTimer) clearInterval(slideTimer);
+    }
+
+    function openCinema(startNum = 1, auto = true) {
+      updateCinemaSlide(startNum);
+      cinemaModal.classList.add("open");
+      if (auto) startAutoSlide();
+      else stopAutoSlide();
+    }
+
+    document.getElementById("cinemaModeBtn").addEventListener("click", () => {
+      if (!isPlaying && player && typeof player.playVideo === "function") player.playVideo();
+      openCinema(1, true);
+    });
+
+    document.getElementById("closeCinema").addEventListener("click", () => {
+      stopAutoSlide();
+      cinemaModal.classList.remove("open");
+    });
+
+    autoPlayToggle.addEventListener("click", () => {
+      if (autoSlide) stopAutoSlide();
+      else startAutoSlide();
+    });
+
+    document.getElementById("cinPrev").addEventListener("click", () => {
+      stopAutoSlide();
+      updateCinemaSlide(cinIndex > 1 ? cinIndex - 1 : 50);
+    });
+
+    document.getElementById("cinNext").addEventListener("click", () => {
+      stopAutoSlide();
+      updateCinemaSlide(cinIndex < 50 ? cinIndex + 1 : 1);
+    });
+
+    // Theme Switcher (Cinema Dark vs Editorial Light)
+    document.getElementById("themeToggleBtn").addEventListener("click", () => {
+      document.body.classList.toggle("light-theme");
+    });
+
+    // Scroll Progress & Cursor Glow
+    window.addEventListener("scroll", () => {
+      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      document.getElementById("scrollProgress").style.width = `${scrolled}%`;
+    });
+
+    const glow = document.getElementById("cursorGlow");
+    window.addEventListener("mousemove", (e) => {
+      glow.style.left = `${e.clientX}px`;
+      glow.style.top = `${e.clientY}px`;
+    });
+
+    // Guestbook Wishes
+    const wishList = document.getElementById("wishList");
+    const savedWishes = JSON.parse(localStorage.getItem("dn_wishes") || '[{"name":"Família & Amigos","msg":"Que o amor de vocês se renove a cada novo amanhecer!"}]');
+
+    function renderWishes() {
+      wishList.innerHTML = savedWishes.map(w => `
+        <div class="wish-item"><strong>${w.name}:</strong> ${w.msg}</div>
+      `).join("");
+    }
+    renderWishes();
+
+    document.getElementById("wishForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("wishName").value.trim();
+      const msg = document.getElementById("wishMsg").value.trim();
+      if (!name || !msg) return;
+      savedWishes.unshift({ name, msg });
+      localStorage.setItem("dn_wishes", JSON.stringify(savedWishes));
+      renderWishes();
+      e.target.reset();
+    });
+
+    // YouTube IFrame API (NZGHXy1IAHM)
+    let player;
+    let isPlaying = false;
+    const hudMusicBtn = document.getElementById("hudMusicBtn");
+    const hudMusicText = document.getElementById("hudMusicText");
+
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    window.onYouTubeIframeAPIReady = function() {
+      player = new YT.Player("yt-player", {
+        height: "1",
+        width: "1",
+        videoId: "NZGHXy1IAHM",
+        playerVars: { autoplay: 0, loop: 1, playlist: "NZGHXy1IAHM" },
+        events: {
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.PLAYING) {
+              isPlaying = true;
+              hudMusicBtn.classList.add("active");
+              hudMusicText.textContent = "Pausar";
+            } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+              isPlaying = false;
+              hudMusicBtn.classList.remove("active");
+              hudMusicText.textContent = "Tocar Música";
+            }
+          }
+        }
+      });
+    };
+
+    document.getElementById("enterWithMusic").addEventListener("click", () => {
+      document.getElementById("curtain").classList.add("hidden");
+      if (player && typeof player.playVideo === "function") player.playVideo();
+    });
+
+    document.getElementById("enterSilent").addEventListener("click", () => {
+      document.getElementById("curtain").classList.add("hidden");
+    });
+
+    hudMusicBtn.addEventListener("click", () => {
+      if (!player || typeof player.playVideo !== "function") {
+        window.open("https://youtu.be/NZGHXy1IAHM?si=Tkhf4lLRZ45Hh5JI", "_blank");
+        return;
+      }
+      isPlaying ? player.pauseVideo() : player.playVideo();
+    });
+  </script>
+</body>
+</html>
