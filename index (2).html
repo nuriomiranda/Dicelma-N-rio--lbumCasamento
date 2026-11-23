@@ -636,8 +636,12 @@
       <form class="wish-form" id="wishForm">
         <input type="text" id="wishName" placeholder="O seu nome" required />
         <input type="text" id="wishMsg" placeholder="A sua mensagem de carinho..." required />
-        <button type="submit" class="btn-primary-gold" style="padding: 0.8rem 1.5rem;">Enviar</button>
+        <button type="submit" class="btn-primary-gold" style="padding: 0.8rem 1.5rem;">Guardar no Mural</button>
+        <button type="button" id="sendWhatsAppBtn" class="btn-ghost" style="padding: 0.8rem 1.5rem; color: inherit; border-color: rgba(212, 175, 55, 0.55);">Enviar por WhatsApp</button>
       </form>
+      <p style="margin-top: 1rem; font-size: 0.78rem; opacity: 0.72;">
+        WhatsApp direto: <a href="https://wa.me/244935535154" target="_blank" rel="noopener" style="color: var(--gold); text-decoration: none;">+244 935 535 154 &nearr;</a>
+      </p>
       <div class="wish-list" id="wishList"></div>
     </div>
   </section>
@@ -883,6 +887,15 @@
     }
     renderWishes();
 
+    const WHATSAPP_NUMBER = "244935535154";
+
+    function buildWhatsAppUrl(name, msg) {
+      const cleanName = name || "Convidado(a)";
+      const cleanMsg = msg || "Parabéns pelo casamento, Dicelma & Núrio!";
+      const text = `Olá! Deixo esta mensagem para Dicelma & Núrio:\n\n*Nome:* ${cleanName}\n*Mensagem:* ${cleanMsg}`;
+      return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    }
+
     document.getElementById("wishForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("wishName").value.trim();
@@ -892,6 +905,17 @@
       localStorage.setItem("dn_wishes", JSON.stringify(savedWishes));
       renderWishes();
       e.target.reset();
+    });
+
+    document.getElementById("sendWhatsAppBtn").addEventListener("click", () => {
+      const name = document.getElementById("wishName").value.trim();
+      const msg = document.getElementById("wishMsg").value.trim();
+      if (name && msg) {
+        savedWishes.unshift({ name, msg });
+        localStorage.setItem("dn_wishes", JSON.stringify(savedWishes));
+        renderWishes();
+      }
+      window.open(buildWhatsAppUrl(name, msg), "_blank", "noopener");
     });
 
     // YouTube IFrame API: Principal (Ju8Hr50Ckwk) -> Secundária (NZGHXy1IAHM)
