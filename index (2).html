@@ -330,7 +330,7 @@
       color: var(--gold-soft);
     }
 
-    /* Magazine / Bento Dynamic Grid */
+    /* Magazine / Bento Dynamic Grid with Cinematic Reveal */
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
@@ -344,11 +344,39 @@
       cursor: pointer;
       background: #1C1A18;
       transform-style: preserve-3d;
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+      opacity: 0;
+      clip-path: inset(12% 0% 12% 0% round 6px);
+      transform: translateY(45px) scale(0.94);
+      transition:
+        opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+        clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.45s ease;
+    }
+
+    .tile.revealed {
+      opacity: 1;
+      clip-path: inset(0% 0% 0% 0% round 6px);
+      transform: translateY(0) scale(1);
+    }
+
+    .tile::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(212, 175, 55, 0.28) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 0.95s cubic-bezier(0.19, 1, 0.22, 1);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tile:hover::after {
+      transform: translateX(120%);
     }
 
     .tile:hover {
-      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 26px 55px rgba(0, 0, 0, 0.55), 0 0 25px rgba(212, 175, 55, 0.16);
       z-index: 4;
     }
 
@@ -357,11 +385,13 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: contrast(1.02) saturate(0.95);
+      transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease;
     }
 
     .tile:hover img {
-      transform: scale(1.05);
+      transform: scale(1.075);
+      filter: contrast(1.06) saturate(1.08);
     }
 
     /* Span variations for editorial rhythm */
@@ -383,6 +413,7 @@
       justify-content: flex-end;
       padding: 1.4rem;
       color: #F7F4EF;
+      z-index: 3;
     }
 
     .tile:hover .tile-overlay {
@@ -420,7 +451,7 @@
       transform: scale(1.1);
     }
 
-    /* Cinema Slideshow Mode */
+    /* Cinema Slideshow Mode with 5 Rotating Transitions */
     .cinema-modal {
       position: fixed;
       inset: 0;
@@ -441,19 +472,73 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      perspective: 1400px;
+      overflow: hidden;
     }
 
     .cinema-frame img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      border-radius: 4px;
-      animation: kenBurns 9s ease-in-out infinite alternate;
+      border-radius: 6px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.85);
+      will-change: transform, opacity, filter, clip-path;
     }
 
-    @keyframes kenBurns {
-      from { transform: scale(1); }
-      to { transform: scale(1.045); }
+    /* 1. Iris Zoom + Blur Focus */
+    .fx-iris-zoom {
+      animation: fxIrisZoom 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsSlow 8s 1.15s ease-in-out infinite alternate;
+    }
+    @keyframes fxIrisZoom {
+      0% { opacity: 0; transform: scale(1.18); filter: blur(14px) brightness(1.3); clip-path: circle(12% at 50% 50%); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0px) brightness(1); clip-path: circle(100% at 50% 50%); }
+    }
+
+    /* 2. Editorial Curtain Sweep */
+    .fx-curtain-sweep {
+      animation: fxCurtainSweep 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards, kenBurnsPan 8s 1.05s ease-in-out infinite alternate;
+    }
+    @keyframes fxCurtainSweep {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(40px) scale(1.06); filter: contrast(1.2); }
+      100% { opacity: 1; clip-path: inset(0 0% 0 0); transform: translateX(0) scale(1); filter: contrast(1); }
+    }
+
+    /* 3. 3D Perspective Drift */
+    .fx-3d-drift {
+      animation: fx3dDrift 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsSlow 8s 1.1s ease-in-out infinite alternate;
+    }
+    @keyframes fx3dDrift {
+      0% { opacity: 0; transform: rotateY(-14deg) rotateX(5deg) scale(0.88) translateY(30px); filter: blur(8px); }
+      100% { opacity: 1; transform: rotateY(0deg) rotateX(0deg) scale(1) translateY(0); filter: blur(0); }
+    }
+
+    /* 4. Golden Camera Flash Bloom */
+    .fx-golden-flash {
+      animation: fxGoldenFlash 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsPan 8s 1.15s ease-in-out infinite alternate;
+    }
+    @keyframes fxGoldenFlash {
+      0% { opacity: 0; transform: scale(0.92); filter: brightness(2.1) sepia(0.45) blur(10px); }
+      45% { opacity: 1; filter: brightness(1.25) sepia(0.15) blur(0px); }
+      100% { opacity: 1; transform: scale(1); filter: brightness(1) sepia(0) blur(0px); }
+    }
+
+    /* 5. Cinema Vertical Split Reveal */
+    .fx-vertical-reveal {
+      animation: fxVerticalReveal 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards, kenBurnsSlow 8s 1.05s ease-in-out infinite alternate;
+    }
+    @keyframes fxVerticalReveal {
+      0% { opacity: 0; clip-path: inset(50% 0 50% 0); transform: scale(1.1); }
+      100% { opacity: 1; clip-path: inset(0% 0 0% 0); transform: scale(1); }
+    }
+
+    @keyframes kenBurnsSlow {
+      from { transform: scale(1) translate(0, 0); }
+      to { transform: scale(1.06) translate(-1%, -1%); }
+    }
+
+    @keyframes kenBurnsPan {
+      from { transform: scale(1.04) translateX(-1.5%); }
+      to { transform: scale(1.04) translateX(1.5%); }
     }
 
     .cinema-caption-bar {
@@ -467,6 +552,16 @@
       font-style: italic;
       font-size: 1.45rem;
       color: var(--gold);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .cinema-caption-bar small {
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .caption-fade {
+      opacity: 0 !important;
+      transform: translateY(10px);
     }
 
     .cinema-controls {
@@ -706,6 +801,21 @@
     let favorites = JSON.parse(localStorage.getItem("dn_favs") || "[]");
     const stage = document.getElementById("galleryStage");
 
+    function observeTiles() {
+      const tiles = document.querySelectorAll(".tile");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add("revealed");
+            }, (i % 4) * 110);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      tiles.forEach(t => observer.observe(t));
+    }
+
     function renderGallery(filter = "all") {
       stage.innerHTML = "";
       chaptersData.forEach(chap => {
@@ -747,13 +857,15 @@
           `;
 
           tile.addEventListener("mousemove", (e) => {
+            if (!tile.classList.contains("revealed")) return;
             const rect = tile.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
-            tile.style.transform = `perspective(900px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg)`;
+            tile.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) scale(1.015)`;
           });
           tile.addEventListener("mouseleave", () => {
-            tile.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg)";
+            if (!tile.classList.contains("revealed")) return;
+            tile.style.transform = "translateY(0) scale(1)";
           });
 
           tile.addEventListener("click", (e) => {
@@ -772,6 +884,7 @@
         stage.appendChild(section);
       });
       document.getElementById("favCount").textContent = favorites.length;
+      observeTiles();
     }
 
     function toggleFavorite(num) {
@@ -795,7 +908,7 @@
       });
     });
 
-    // Cinema Slideshow Mode
+    // Cinema Slideshow Mode with Rotating Creative Transitions
     const cinemaModal = document.getElementById("cinemaModal");
     const cinImg = document.getElementById("cinImg");
     const cinCaption = document.getElementById("cinCaption");
@@ -805,12 +918,35 @@
     let slideTimer = null;
     let autoSlide = true;
 
+    const cinemaEffects = [
+      "fx-iris-zoom",
+      "fx-curtain-sweep",
+      "fx-3d-drift",
+      "fx-golden-flash",
+      "fx-vertical-reveal"
+    ];
+    let fxCounter = 0;
+
     function updateCinemaSlide(num) {
       cinIndex = num;
+      const nextFx = cinemaEffects[fxCounter % cinemaEffects.length];
+      fxCounter++;
+
+      cinCaption.classList.add("caption-fade");
+      cinCounter.classList.add("caption-fade");
+
+      cinImg.className = "";
+      void cinImg.offsetWidth;
       cinImg.src = `fotos/${pad(cinIndex)}.jpg`;
       cinImg.onerror = () => { cinImg.src = fallbackImg; };
-      cinCaption.textContent = captions[cinIndex - 1];
-      cinCounter.textContent = `${pad(cinIndex)} / 50`;
+      cinImg.classList.add(nextFx);
+
+      setTimeout(() => {
+        cinCaption.textContent = captions[cinIndex - 1];
+        cinCounter.textContent = `${pad(cinIndex)} / 50`;
+        cinCaption.classList.remove("caption-fade");
+        cinCounter.classList.remove("caption-fade");
+      }, 180);
     }
 
     function startAutoSlide() {
@@ -820,7 +956,7 @@
       autoPlayToggle.innerHTML = "&#9208; Auto-Play Ativo";
       slideTimer = setInterval(() => {
         updateCinemaSlide(cinIndex < 50 ? cinIndex + 1 : 1);
-      }, 4500);
+      }, 4800);
     }
 
     function stopAutoSlide() {
@@ -838,7 +974,7 @@
     }
 
     document.getElementById("cinemaModeBtn").addEventListener("click", () => {
-      if (!isPlaying && player && typeof player.playVideo === "function") player.playVideo();
+      if (!isPlaying) triggerPlayTrack(currentTrackKey);
       openCinema(1, true);
     });
 
@@ -892,7 +1028,10 @@
     function buildWhatsAppUrl(name, msg) {
       const cleanName = name || "Convidado(a)";
       const cleanMsg = msg || "Parabéns pelo casamento, Dicelma & Núrio!";
-      const text = `Olá! Deixo esta mensagem para Dicelma & Núrio:\n\n*Nome:* ${cleanName}\n*Mensagem:* ${cleanMsg}`;
+      const text = `Olá! Deixo esta mensagem para Dicelma & Núrio:
+
+*Nome:* ${cleanName}
+*Mensagem:* ${cleanMsg}`;
       return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
     }
 
@@ -918,7 +1057,7 @@
       window.open(buildWhatsAppUrl(name, msg), "_blank", "noopener");
     });
 
-    // YouTube IFrame API: Principal (Ju8Hr50Ckwk) -> Secundária (NZGHXy1IAHM)
+    // YouTube IFrame API + Fallback Instantâneo: Principal (Ju8Hr50Ckwk) -> Secundária (NZGHXy1IAHM)
     const TRACKS = {
       primary: { id: "Ju8Hr50Ckwk", label: "Principal", url: "https://youtu.be/Ju8Hr50Ckwk?si=JDyW_p902hOTlf98" },
       secondary: { id: "NZGHXy1IAHM", label: "Secundária", url: "https://youtu.be/NZGHXy1IAHM?si=Tkhf4lLRZ45Hh5JI" }
@@ -926,11 +1065,59 @@
 
     let currentTrackKey = "primary";
     let player;
+    let playerReady = false;
+    let pendingPlayTrack = null;
     let isPlaying = false;
+
     const hudMusicBtn = document.getElementById("hudMusicBtn");
     const hudMusicText = document.getElementById("hudMusicText");
     const switchTrackBtn = document.getElementById("switchTrackBtn");
     const trackModeLabel = document.getElementById("trackModeLabel");
+    const ytHidden = document.getElementById("yt-hidden");
+
+    function setPlayingUI(playing) {
+      isPlaying = playing;
+      if (playing) {
+        hudMusicBtn.classList.add("active");
+        hudMusicText.textContent = "Pausar";
+      } else {
+        hudMusicBtn.classList.remove("active");
+        hudMusicText.textContent = "Tocar Música";
+      }
+    }
+
+    function playViaDirectIframe(trackKey) {
+      const track = TRACKS[trackKey];
+      ytHidden.innerHTML = `<iframe id="yt-direct-frame" width="240" height="140" src="https://www.youtube.com/embed/${track.id}?autoplay=1&loop=1&playlist=${track.id},${TRACKS.secondary.id}&enablejsapi=1" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      setPlayingUI(true);
+    }
+
+    function stopAudio() {
+      if (player && playerReady && typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+      const directFrame = document.getElementById("yt-direct-frame");
+      if (directFrame) {
+        directFrame.remove();
+      }
+      setPlayingUI(false);
+    }
+
+    function triggerPlayTrack(key) {
+      currentTrackKey = key;
+      trackModeLabel.textContent = `Faixa: ${TRACKS[key].label}`;
+
+      if (player && playerReady && typeof player.loadVideoById === "function") {
+        player.unMute?.();
+        player.setVolume?.(100);
+        player.loadVideoById({ videoId: TRACKS[key].id });
+        player.playVideo?.();
+        setPlayingUI(true);
+      } else {
+        pendingPlayTrack = key;
+        playViaDirectIframe(key);
+      }
+    }
 
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -938,8 +1125,8 @@
 
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player("yt-player", {
-        height: "1",
-        width: "1",
+        height: "140",
+        width: "240",
         videoId: TRACKS.primary.id,
         playerVars: {
           autoplay: 0,
@@ -947,54 +1134,50 @@
           playlist: `${TRACKS.primary.id},${TRACKS.secondary.id}`
         },
         events: {
+          onReady: () => {
+            playerReady = true;
+            if (pendingPlayTrack) {
+              const directFrame = document.getElementById("yt-direct-frame");
+              if (directFrame) directFrame.remove();
+              player.unMute?.();
+              player.setVolume?.(100);
+              player.loadVideoById({ videoId: TRACKS[pendingPlayTrack].id });
+              player.playVideo?.();
+              pendingPlayTrack = null;
+            }
+          },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
-              isPlaying = true;
-              hudMusicBtn.classList.add("active");
-              hudMusicText.textContent = "Pausar";
+              setPlayingUI(true);
             } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
-              isPlaying = false;
-              hudMusicBtn.classList.remove("active");
-              hudMusicText.textContent = "Tocar Música";
+              setPlayingUI(false);
             }
           }
         }
       });
     };
 
-    function applyTrack(key, shouldPlay = true) {
-      currentTrackKey = key;
-      trackModeLabel.textContent = `Faixa: ${TRACKS[key].label}`;
-      if (player && typeof player.loadVideoById === "function") {
-        if (shouldPlay) {
-          player.loadVideoById({ videoId: TRACKS[key].id });
-        } else if (typeof player.cueVideoById === "function") {
-          player.cueVideoById({ videoId: TRACKS[key].id });
-        }
-      }
-    }
-
     document.getElementById("enterWithMusic").addEventListener("click", () => {
       document.getElementById("curtain").classList.add("hidden");
-      applyTrack("primary", true);
-      if (player && typeof player.playVideo === "function") player.playVideo();
+      triggerPlayTrack("primary");
     });
 
     document.getElementById("enterSilent").addEventListener("click", () => {
       document.getElementById("curtain").classList.add("hidden");
+      stopAudio();
     });
 
     hudMusicBtn.addEventListener("click", () => {
-      if (!player || typeof player.playVideo !== "function") {
-        window.open(TRACKS[currentTrackKey].url, "_blank");
-        return;
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        triggerPlayTrack(currentTrackKey);
       }
-      isPlaying ? player.pauseVideo() : player.playVideo();
     });
 
     switchTrackBtn.addEventListener("click", () => {
       const nextKey = currentTrackKey === "primary" ? "secondary" : "primary";
-      applyTrack(nextKey, true);
+      triggerPlayTrack(nextKey);
     });
   </script>
 </body>
