@@ -157,15 +157,16 @@
       z-index: 1000;
       display: flex;
       align-items: center;
-      gap: 1.2rem;
-      padding: 0.65rem 1.4rem;
+      gap: 0.8rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 999px;
-      background: rgba(18, 17, 16, 0.72);
+      background: rgba(18, 17, 16, 0.78);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text-light);
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      max-width: 94vw;
+      max-width: 96vw;
+      overflow-x: auto;
     }
 
     .hud-brand {
@@ -180,15 +181,15 @@
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.14);
       color: #fff;
-      padding: 0.42rem 0.95rem;
+      padding: 0.42rem 0.9rem;
       border-radius: 999px;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
+      font-size: 0.68rem;
+      letter-spacing: 0.11em;
       text-transform: uppercase;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.4rem;
       white-space: nowrap;
       transition: all 0.25s;
     }
@@ -329,7 +330,7 @@
       color: var(--gold-soft);
     }
 
-    /* Magazine / Bento Dynamic Grid */
+    /* Magazine / Bento Dynamic Grid with Cinematic Reveal */
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
@@ -343,11 +344,39 @@
       cursor: pointer;
       background: #1C1A18;
       transform-style: preserve-3d;
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
+      opacity: 0;
+      clip-path: inset(12% 0% 12% 0% round 6px);
+      transform: translateY(45px) scale(0.94);
+      transition:
+        opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+        clip-path 1.1s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.45s ease;
+    }
+
+    .tile.revealed {
+      opacity: 1;
+      clip-path: inset(0% 0% 0% 0% round 6px);
+      transform: translateY(0) scale(1);
+    }
+
+    .tile::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(212, 175, 55, 0.28) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 0.95s cubic-bezier(0.19, 1, 0.22, 1);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tile:hover::after {
+      transform: translateX(120%);
     }
 
     .tile:hover {
-      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 26px 55px rgba(0, 0, 0, 0.55), 0 0 25px rgba(212, 175, 55, 0.16);
       z-index: 4;
     }
 
@@ -356,11 +385,13 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: contrast(1.02) saturate(0.95);
+      transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s ease;
     }
 
     .tile:hover img {
-      transform: scale(1.05);
+      transform: scale(1.075);
+      filter: contrast(1.06) saturate(1.08);
     }
 
     /* Span variations for editorial rhythm */
@@ -382,6 +413,7 @@
       justify-content: flex-end;
       padding: 1.4rem;
       color: #F7F4EF;
+      z-index: 3;
     }
 
     .tile:hover .tile-overlay {
@@ -419,7 +451,7 @@
       transform: scale(1.1);
     }
 
-    /* Cinema Slideshow Mode */
+    /* Cinema Slideshow Mode with 5 Rotating Transitions */
     .cinema-modal {
       position: fixed;
       inset: 0;
@@ -440,19 +472,73 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      perspective: 1400px;
+      overflow: hidden;
     }
 
     .cinema-frame img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      border-radius: 4px;
-      animation: kenBurns 9s ease-in-out infinite alternate;
+      border-radius: 6px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.85);
+      will-change: transform, opacity, filter, clip-path;
     }
 
-    @keyframes kenBurns {
-      from { transform: scale(1); }
-      to { transform: scale(1.045); }
+    /* 1. Iris Zoom + Blur Focus */
+    .fx-iris-zoom {
+      animation: fxIrisZoom 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsSlow 8s 1.15s ease-in-out infinite alternate;
+    }
+    @keyframes fxIrisZoom {
+      0% { opacity: 0; transform: scale(1.18); filter: blur(14px) brightness(1.3); clip-path: circle(12% at 50% 50%); }
+      100% { opacity: 1; transform: scale(1); filter: blur(0px) brightness(1); clip-path: circle(100% at 50% 50%); }
+    }
+
+    /* 2. Editorial Curtain Sweep */
+    .fx-curtain-sweep {
+      animation: fxCurtainSweep 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards, kenBurnsPan 8s 1.05s ease-in-out infinite alternate;
+    }
+    @keyframes fxCurtainSweep {
+      0% { opacity: 0; clip-path: inset(0 100% 0 0); transform: translateX(40px) scale(1.06); filter: contrast(1.2); }
+      100% { opacity: 1; clip-path: inset(0 0% 0 0); transform: translateX(0) scale(1); filter: contrast(1); }
+    }
+
+    /* 3. 3D Perspective Drift */
+    .fx-3d-drift {
+      animation: fx3dDrift 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsSlow 8s 1.1s ease-in-out infinite alternate;
+    }
+    @keyframes fx3dDrift {
+      0% { opacity: 0; transform: rotateY(-14deg) rotateX(5deg) scale(0.88) translateY(30px); filter: blur(8px); }
+      100% { opacity: 1; transform: rotateY(0deg) rotateX(0deg) scale(1) translateY(0); filter: blur(0); }
+    }
+
+    /* 4. Golden Camera Flash Bloom */
+    .fx-golden-flash {
+      animation: fxGoldenFlash 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards, kenBurnsPan 8s 1.15s ease-in-out infinite alternate;
+    }
+    @keyframes fxGoldenFlash {
+      0% { opacity: 0; transform: scale(0.92); filter: brightness(2.1) sepia(0.45) blur(10px); }
+      45% { opacity: 1; filter: brightness(1.25) sepia(0.15) blur(0px); }
+      100% { opacity: 1; transform: scale(1); filter: brightness(1) sepia(0) blur(0px); }
+    }
+
+    /* 5. Cinema Vertical Split Reveal */
+    .fx-vertical-reveal {
+      animation: fxVerticalReveal 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards, kenBurnsSlow 8s 1.05s ease-in-out infinite alternate;
+    }
+    @keyframes fxVerticalReveal {
+      0% { opacity: 0; clip-path: inset(50% 0 50% 0); transform: scale(1.1); }
+      100% { opacity: 1; clip-path: inset(0% 0 0% 0); transform: scale(1); }
+    }
+
+    @keyframes kenBurnsSlow {
+      from { transform: scale(1) translate(0, 0); }
+      to { transform: scale(1.06) translate(-1%, -1%); }
+    }
+
+    @keyframes kenBurnsPan {
+      from { transform: scale(1.04) translateX(-1.5%); }
+      to { transform: scale(1.04) translateX(1.5%); }
     }
 
     .cinema-caption-bar {
@@ -466,6 +552,16 @@
       font-style: italic;
       font-size: 1.45rem;
       color: var(--gold);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .cinema-caption-bar small {
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .caption-fade {
+      opacity: 0 !important;
+      transform: translateY(10px);
     }
 
     .cinema-controls {
@@ -544,6 +640,20 @@
       font-size: 0.9rem;
     }
 
+    footer {
+      text-align: center;
+      padding: 3rem 5vw 5rem;
+      opacity: 0.75;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+    }
+
+    footer a {
+      color: var(--gold);
+      text-decoration: none;
+      margin: 0 0.6rem;
+    }
+
     #yt-hidden {
       position: fixed;
       width: 1px;
@@ -572,7 +682,7 @@
     <h1 class="curtain-names">Dicelma &amp; Núrio</h1>
     <p class="curtain-sub">Aumente o som e entre na nossa história. Uma experiência visual criada para sentir cada instante novamente.</p>
     <div class="enter-actions">
-      <button class="btn-primary-gold" id="enterWithMusic">&#9654; Entrar com Música</button>
+      <button class="btn-primary-gold" id="enterWithMusic">&#9654; Entrar com Música Principal</button>
       <button class="btn-ghost" id="enterSilent">Entrar em Silêncio</button>
     </div>
   </div>
@@ -580,7 +690,8 @@
   <!-- Floating HUD -->
   <nav class="hud-nav">
     <span class="hud-brand">D &amp; N</span>
-    <button class="hud-btn" id="hudMusicBtn">&#9835; <span id="hudMusicText">Tocar Música</span></button>
+    <button class="hud-btn active" id="hudMusicBtn">&#9835; <span id="hudMusicText">Música Principal</span></button>
+    <button class="hud-btn" id="switchTrackBtn" title="Alternar entre música principal e secundária">&#8644; <span id="trackModeLabel">Faixa: Principal</span></button>
     <button class="hud-btn" id="cinemaModeBtn">&#9658; Modo Cinema</button>
     <button class="hud-btn" id="themeToggleBtn">&#9788; Luz / Noite</button>
   </nav>
@@ -620,11 +731,23 @@
       <form class="wish-form" id="wishForm">
         <input type="text" id="wishName" placeholder="O seu nome" required />
         <input type="text" id="wishMsg" placeholder="A sua mensagem de carinho..." required />
-        <button type="submit" class="btn-primary-gold" style="padding: 0.8rem 1.5rem;">Enviar</button>
+        <button type="submit" class="btn-primary-gold" style="padding: 0.8rem 1.5rem;">Guardar no Mural</button>
+        <button type="button" id="sendWhatsAppBtn" class="btn-ghost" style="padding: 0.8rem 1.5rem; color: inherit; border-color: rgba(212, 175, 55, 0.55);">Enviar por WhatsApp</button>
       </form>
+      <p style="margin-top: 1rem; font-size: 0.78rem; opacity: 0.72;">
+        WhatsApp direto: <a href="https://wa.me/244935535154" target="_blank" rel="noopener" style="color: var(--gold); text-decoration: none;">+244 935 535 154 &nearr;</a>
+      </p>
       <div class="wish-list" id="wishList"></div>
     </div>
   </section>
+
+  <footer>
+    <p>DICELMA &amp; NÚRIO &bull; TRILHA SONORA</p>
+    <div style="margin-top: 0.6rem;">
+      <a href="https://youtu.be/Ju8Hr50Ckwk?si=JDyW_p902hOTlf98" target="_blank" rel="noopener">Música Principal (YouTube) &nearr;</a>
+      <a href="https://youtu.be/NZGHXy1IAHM?si=Tkhf4lLRZ45Hh5JI" target="_blank" rel="noopener">Música Secundária (YouTube) &nearr;</a>
+    </div>
+  </footer>
 
   <!-- Auto-Playing Cinema Slideshow Modal -->
   <div class="cinema-modal" id="cinemaModal">
@@ -643,7 +766,7 @@
     </div>
   </div>
 
-  <!-- YouTube Player (NZGHXy1IAHM) -->
+  <!-- YouTube Player (Principal: Ju8Hr50Ckwk | Secundária: NZGHXy1IAHM) -->
   <div id="yt-hidden"><div id="yt-player"></div></div>
 
   <script>
@@ -678,6 +801,21 @@
     let favorites = JSON.parse(localStorage.getItem("dn_favs") || "[]");
     const stage = document.getElementById("galleryStage");
 
+    function observeTiles() {
+      const tiles = document.querySelectorAll(".tile");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add("revealed");
+            }, (i % 4) * 110);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      tiles.forEach(t => observer.observe(t));
+    }
+
     function renderGallery(filter = "all") {
       stage.innerHTML = "";
       chaptersData.forEach(chap => {
@@ -700,7 +838,7 @@
         `;
         const grid = section.querySelector(".bento-grid");
 
-        items.forEach((num, idx) => {
+        items.forEach((num) => {
           const spanClass = filter === "favs" ? "span-6" : spanPattern[(num - 1) % spanPattern.length];
           const isLoved = favorites.includes(num);
           const tile = document.createElement("div");
@@ -718,15 +856,16 @@
             </div>
           `;
 
-          // 3D Tilt effect on mouse move
           tile.addEventListener("mousemove", (e) => {
+            if (!tile.classList.contains("revealed")) return;
             const rect = tile.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
-            tile.style.transform = `perspective(900px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg)`;
+            tile.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) scale(1.015)`;
           });
           tile.addEventListener("mouseleave", () => {
-            tile.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg)";
+            if (!tile.classList.contains("revealed")) return;
+            tile.style.transform = "translateY(0) scale(1)";
           });
 
           tile.addEventListener("click", (e) => {
@@ -745,6 +884,7 @@
         stage.appendChild(section);
       });
       document.getElementById("favCount").textContent = favorites.length;
+      observeTiles();
     }
 
     function toggleFavorite(num) {
@@ -760,7 +900,6 @@
 
     renderGallery();
 
-    // Filter pills
     document.querySelectorAll(".filter-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
@@ -769,7 +908,7 @@
       });
     });
 
-    // Cinema Slideshow Mode
+    // Cinema Slideshow Mode with Rotating Creative Transitions
     const cinemaModal = document.getElementById("cinemaModal");
     const cinImg = document.getElementById("cinImg");
     const cinCaption = document.getElementById("cinCaption");
@@ -779,12 +918,35 @@
     let slideTimer = null;
     let autoSlide = true;
 
+    const cinemaEffects = [
+      "fx-iris-zoom",
+      "fx-curtain-sweep",
+      "fx-3d-drift",
+      "fx-golden-flash",
+      "fx-vertical-reveal"
+    ];
+    let fxCounter = 0;
+
     function updateCinemaSlide(num) {
       cinIndex = num;
+      const nextFx = cinemaEffects[fxCounter % cinemaEffects.length];
+      fxCounter++;
+
+      cinCaption.classList.add("caption-fade");
+      cinCounter.classList.add("caption-fade");
+
+      cinImg.className = "";
+      void cinImg.offsetWidth;
       cinImg.src = `fotos/${pad(cinIndex)}.jpg`;
       cinImg.onerror = () => { cinImg.src = fallbackImg; };
-      cinCaption.textContent = captions[cinIndex - 1];
-      cinCounter.textContent = `${pad(cinIndex)} / 50`;
+      cinImg.classList.add(nextFx);
+
+      setTimeout(() => {
+        cinCaption.textContent = captions[cinIndex - 1];
+        cinCounter.textContent = `${pad(cinIndex)} / 50`;
+        cinCaption.classList.remove("caption-fade");
+        cinCounter.classList.remove("caption-fade");
+      }, 180);
     }
 
     function startAutoSlide() {
@@ -794,7 +956,7 @@
       autoPlayToggle.innerHTML = "&#9208; Auto-Play Ativo";
       slideTimer = setInterval(() => {
         updateCinemaSlide(cinIndex < 50 ? cinIndex + 1 : 1);
-      }, 4500);
+      }, 4800);
     }
 
     function stopAutoSlide() {
@@ -812,7 +974,7 @@
     }
 
     document.getElementById("cinemaModeBtn").addEventListener("click", () => {
-      if (!isPlaying && player && typeof player.playVideo === "function") player.playVideo();
+      if (!isPlaying) triggerPlayTrack(currentTrackKey);
       openCinema(1, true);
     });
 
@@ -836,12 +998,10 @@
       updateCinemaSlide(cinIndex < 50 ? cinIndex + 1 : 1);
     });
 
-    // Theme Switcher (Cinema Dark vs Editorial Light)
     document.getElementById("themeToggleBtn").addEventListener("click", () => {
       document.body.classList.toggle("light-theme");
     });
 
-    // Scroll Progress & Cursor Glow
     window.addEventListener("scroll", () => {
       const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
       document.getElementById("scrollProgress").style.width = `${scrolled}%`;
@@ -853,7 +1013,6 @@
       glow.style.top = `${e.clientY}px`;
     });
 
-    // Guestbook Wishes
     const wishList = document.getElementById("wishList");
     const savedWishes = JSON.parse(localStorage.getItem("dn_wishes") || '[{"name":"Família & Amigos","msg":"Que o amor de vocês se renove a cada novo amanhecer!"}]');
 
@@ -863,6 +1022,18 @@
       `).join("");
     }
     renderWishes();
+
+    const WHATSAPP_NUMBER = "244935535154";
+
+    function buildWhatsAppUrl(name, msg) {
+      const cleanName = name || "Convidado(a)";
+      const cleanMsg = msg || "Parabéns pelo casamento, Dicelma & Núrio!";
+      const text = `Olá! Deixo esta mensagem para Dicelma & Núrio:
+
+*Nome:* ${cleanName}
+*Mensagem:* ${cleanMsg}`;
+      return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    }
 
     document.getElementById("wishForm").addEventListener("submit", (e) => {
       e.preventDefault();
@@ -875,11 +1046,78 @@
       e.target.reset();
     });
 
-    // YouTube IFrame API (NZGHXy1IAHM)
+    document.getElementById("sendWhatsAppBtn").addEventListener("click", () => {
+      const name = document.getElementById("wishName").value.trim();
+      const msg = document.getElementById("wishMsg").value.trim();
+      if (name && msg) {
+        savedWishes.unshift({ name, msg });
+        localStorage.setItem("dn_wishes", JSON.stringify(savedWishes));
+        renderWishes();
+      }
+      window.open(buildWhatsAppUrl(name, msg), "_blank", "noopener");
+    });
+
+    // YouTube IFrame API + Fallback Instantâneo: Principal (Ju8Hr50Ckwk) -> Secundária (NZGHXy1IAHM)
+    const TRACKS = {
+      primary: { id: "Ju8Hr50Ckwk", label: "Principal", url: "https://youtu.be/Ju8Hr50Ckwk?si=JDyW_p902hOTlf98" },
+      secondary: { id: "NZGHXy1IAHM", label: "Secundária", url: "https://youtu.be/NZGHXy1IAHM?si=Tkhf4lLRZ45Hh5JI" }
+    };
+
+    let currentTrackKey = "primary";
     let player;
+    let playerReady = false;
+    let pendingPlayTrack = null;
     let isPlaying = false;
+
     const hudMusicBtn = document.getElementById("hudMusicBtn");
     const hudMusicText = document.getElementById("hudMusicText");
+    const switchTrackBtn = document.getElementById("switchTrackBtn");
+    const trackModeLabel = document.getElementById("trackModeLabel");
+    const ytHidden = document.getElementById("yt-hidden");
+
+    function setPlayingUI(playing) {
+      isPlaying = playing;
+      if (playing) {
+        hudMusicBtn.classList.add("active");
+        hudMusicText.textContent = "Pausar";
+      } else {
+        hudMusicBtn.classList.remove("active");
+        hudMusicText.textContent = "Tocar Música";
+      }
+    }
+
+    function playViaDirectIframe(trackKey) {
+      const track = TRACKS[trackKey];
+      ytHidden.innerHTML = `<iframe id="yt-direct-frame" width="240" height="140" src="https://www.youtube.com/embed/${track.id}?autoplay=1&loop=1&playlist=${track.id},${TRACKS.secondary.id}&enablejsapi=1" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+      setPlayingUI(true);
+    }
+
+    function stopAudio() {
+      if (player && playerReady && typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+      const directFrame = document.getElementById("yt-direct-frame");
+      if (directFrame) {
+        directFrame.remove();
+      }
+      setPlayingUI(false);
+    }
+
+    function triggerPlayTrack(key) {
+      currentTrackKey = key;
+      trackModeLabel.textContent = `Faixa: ${TRACKS[key].label}`;
+
+      if (player && playerReady && typeof player.loadVideoById === "function") {
+        player.unMute?.();
+        player.setVolume?.(100);
+        player.loadVideoById({ videoId: TRACKS[key].id });
+        player.playVideo?.();
+        setPlayingUI(true);
+      } else {
+        pendingPlayTrack = key;
+        playViaDirectIframe(key);
+      }
+    }
 
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -887,20 +1125,32 @@
 
     window.onYouTubeIframeAPIReady = function() {
       player = new YT.Player("yt-player", {
-        height: "1",
-        width: "1",
-        videoId: "NZGHXy1IAHM",
-        playerVars: { autoplay: 0, loop: 1, playlist: "NZGHXy1IAHM" },
+        height: "140",
+        width: "240",
+        videoId: TRACKS.primary.id,
+        playerVars: {
+          autoplay: 0,
+          loop: 1,
+          playlist: `${TRACKS.primary.id},${TRACKS.secondary.id}`
+        },
         events: {
+          onReady: () => {
+            playerReady = true;
+            if (pendingPlayTrack) {
+              const directFrame = document.getElementById("yt-direct-frame");
+              if (directFrame) directFrame.remove();
+              player.unMute?.();
+              player.setVolume?.(100);
+              player.loadVideoById({ videoId: TRACKS[pendingPlayTrack].id });
+              player.playVideo?.();
+              pendingPlayTrack = null;
+            }
+          },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.PLAYING) {
-              isPlaying = true;
-              hudMusicBtn.classList.add("active");
-              hudMusicText.textContent = "Pausar";
+              setPlayingUI(true);
             } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
-              isPlaying = false;
-              hudMusicBtn.classList.remove("active");
-              hudMusicText.textContent = "Tocar Música";
+              setPlayingUI(false);
             }
           }
         }
@@ -909,19 +1159,25 @@
 
     document.getElementById("enterWithMusic").addEventListener("click", () => {
       document.getElementById("curtain").classList.add("hidden");
-      if (player && typeof player.playVideo === "function") player.playVideo();
+      triggerPlayTrack("primary");
     });
 
     document.getElementById("enterSilent").addEventListener("click", () => {
       document.getElementById("curtain").classList.add("hidden");
+      stopAudio();
     });
 
     hudMusicBtn.addEventListener("click", () => {
-      if (!player || typeof player.playVideo !== "function") {
-        window.open("https://youtu.be/NZGHXy1IAHM?si=Tkhf4lLRZ45Hh5JI", "_blank");
-        return;
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        triggerPlayTrack(currentTrackKey);
       }
-      isPlaying ? player.pauseVideo() : player.playVideo();
+    });
+
+    switchTrackBtn.addEventListener("click", () => {
+      const nextKey = currentTrackKey === "primary" ? "secondary" : "primary";
+      triggerPlayTrack(nextKey);
     });
   </script>
 </body>
